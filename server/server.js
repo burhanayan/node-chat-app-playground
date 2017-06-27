@@ -9,7 +9,9 @@ const {
 const {
     isRealString
 } = require('./utils/validation');
-const {Users} = require('./utils/users');
+const {
+    Users
+} = require('./utils/users');
 const publicPath = path.join(__dirname + '/../public');
 const port = process.env.PORT || 3000;
 var app = express();
@@ -38,14 +40,22 @@ io.on('connection', (socket) => {
         callback();
     });
 
-    socket.on('createMessage', (createdMessage, callback) => {
-        console.log('Created Message', createdMessage);
-        io.emit('newMessage', generateMessage(createdMessage.from, createdMessage.text));
+    socket.on('createMessage', (message, callback) => {
+        var user = users.getUser(socket.id);
+        if (user && isRealString(message.text)) {
+            io.to(message.room).emit('newMessage', generateMessage(message.room, message.text));
+        }
+
         callback();
     });
 
     socket.on('createLocationMessage', (coords) => {
-        io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude));
+        var user = users.getUser(socket.id);
+
+        if (user) {
+            io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude));
+        }
+
     });
 
     socket.on('disconnect', () => {

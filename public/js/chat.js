@@ -75,9 +75,10 @@ jQuery('#message-form').on('submit', function (e) {
     e.preventDefault();
 
     var messageTextBox = jQuery('[name=message]');
-
+    var params = jQuery.deparam(window.location.search);
     socket.emit('createMessage', {
-        from: 'User',
+        name: params.name,
+        room: params.room,
         text: jQuery('[name=message]').val()
     }, function () {
         messageTextBox.val('')
@@ -94,7 +95,7 @@ locationButton.on('click', function () {
     locationButton.attr('disabled', 'disabled').text('Sending location...');
 
     navigator.geolocation.getCurrentPosition(function (position) {
-        locationButton.removeAttr('disabled').text('Send location');;
+        locationButton.removeAttr('disabled').text('Send location');
         socket.emit('createLocationMessage', {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
